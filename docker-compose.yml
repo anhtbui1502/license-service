@@ -1,0 +1,57 @@
+services:
+  postgres:
+    image: postgres:16.4-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: license
+      POSTGRES_USER: license
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Cần đặt DB_PASSWORD trong .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U license -d license"]
+      interval: 5s
+      retries: 10
+
+  # Chỉ dùng cho dev/test: hứng toàn bộ email, xem tại http://localhost:8025
+  mailpit:
+    image: axllent/mailpit:v1.20.6
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8025:8025"
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/license
+      DB_USERNAME: license
+      DB_PASSWORD: ${DB_PASSWORD}
+      APPROVER_EMAIL: ${APPROVER_EMAIL:?Cần đặt APPROVER_EMAIL trong .env}
+      APPROVER_NAME: ${APPROVER_NAME:-Người duyệt}
+      OTP_HMAC_SECRET: ${OTP_HMAC_SECRET:?Cần đặt OTP_HMAC_SECRET trong .env}
+      BOOTSTRAP_ADMIN_USERNAME: ${BOOTSTRAP_ADMIN_USERNAME:-admin}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:-}
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:-admin@localhost}
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_AUTH: ${SMTP_AUTH:-false}
+      SMTP_STARTTLS: ${SMTP_STARTTLS:-false}
+      MAIL_FROM: ${MAIL_FROM:-license-manager@localhost}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8088:80"
+
+volumes:
+  pgdata:

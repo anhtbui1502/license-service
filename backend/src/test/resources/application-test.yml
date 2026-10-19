@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:license;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+
+app:
+  approver:
+    email: director@test.local
+  otp:
+    hmac-secret: test-secret-test-secret-test-secret-123
+    # job chạy thưa để test tự điều khiển việc hết hạn
+    expiry-job-interval: PT1H
+  bootstrap:
+    admin-password: ""
+  rate-limit:
+    enabled: false
