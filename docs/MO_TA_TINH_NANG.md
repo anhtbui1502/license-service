@@ -59,7 +59,8 @@ Bảng dưới đây giải thích mỗi nhóm yêu cầu ở mục 6 sinh ra t�
 | 6 | Thị trường Việt Nam không quản lý license | Thị trường có thuộc tính "có quản lý license hay không"; nếu không thì **không cho tạo yêu cầu** (BR-01) |
 | 7 | Tránh làm phiền và tránh dò mã OTP | **Giới hạn** số yêu cầu đang chờ, số lần gửi lại, số lần nhập sai, số email mỗi giờ, số lần gọi chức năng (nhóm F7) |
 | 8 | Cần biết ai đã làm gì | **Nhật ký thao tác** và **phân quyền** người dùng (nhóm F6, F8) |
-| 9 | Chưa có thuật toán mã hóa thật | Phần mã hóa phải **tách riêng, thay thế được** (mục 9 và 10) |
+| 9 | Chưa có thuật toán mã hóa thật | Phần mã hóa phải **tách riêng, thay thế được**. Thuật toán ghi ở **Phụ lục A** |
+| 10 | Có file license trong tay (thị trường gửi lại, file cũ, file nghi ngờ) nhưng không biết bên trong là gì, có đúng do VHT cấp không | Có màn hình **tải lên một file license bất kỳ để giải mã**, xem 2 con số và **đối chiếu với lịch sử** (nhóm F9) |
 
 ---
 
@@ -156,7 +157,7 @@ Các nhánh phụ:
 
 | Mã | Yêu cầu |
 |---|---|
-| F4.1 | OTP đúng thì hệ thống sinh file license với **đúng 2 con số trong yêu cầu** (là 2 con số đã gửi trong email) |
+| F4.1 | OTP đúng thì hệ thống sinh file license với **đúng 2 con số trong yêu cầu** (là 2 con số đã gửi trong email). Cách mã hóa theo **Phụ lục A** |
 | F4.2 | Tự gán **phiên bản** tiếp theo cho thị trường (v1, v2…) và một **mã license** dễ đọc (ví dụ `MM-V3-20261019`) |
 | F4.3 | File mới trở thành **license hiện hành** của thị trường. File cũ vẫn được giữ trong lịch sử |
 | F4.4 | Lưu kèm "dấu vân tay" (checksum) của file để sau này đối chiếu một file bất kỳ có đúng do hệ thống sinh ra không |
@@ -199,6 +200,21 @@ Các nhánh phụ:
 | F8.1 | Ghi lại: đăng nhập (thành công / thất bại), tạo yêu cầu, gửi OTP, nhập sai OTP, khóa yêu cầu, hủy yêu cầu, sinh file, tải file, thay đổi thị trường, thay đổi người dùng |
 | F8.2 | Mỗi bản ghi có: thời điểm, người thực hiện, hành động, đối tượng, chi tiết, địa chỉ máy |
 | F8.3 | Admin xem và lọc nhật ký theo hành động và người dùng. **Không ai được sửa hoặc xóa nhật ký** |
+
+### F9. Tải lên và giải mã file license
+
+**Mục đích:** khi có một file license trong tay (thị trường gửi lại file đang chạy, file cấp từ trước khi có hệ thống, file nghi bị sửa…), người dùng cần biết **bên trong ghi gì** và **file có đúng do hệ thống cấp không**.
+
+| Mã | Yêu cầu |
+|---|---|
+| F9.1 | Có màn hình **"Kiểm tra file license"**: chọn hoặc kéo-thả **một file bất kỳ** từ máy để tải lên. Giới hạn dung lượng hợp lý (ví dụ 1 MB) |
+| F9.2 | Hệ thống **giải mã** file theo thuật toán ở **Phụ lục A** và hiển thị **toàn bộ thông tin đọc được**, tối thiểu: **Max Sub**, **Max Active Sub**; thêm mã thị trường, phiên bản, mã license, ngày cấp nếu định dạng file có các thông tin này |
+| F9.3 | Nếu **không giải mã được** (sai định dạng, file hỏng, không phải file license) thì báo rõ "Không giải mã được file", không báo lỗi chung chung |
+| F9.4 | **Đối chiếu với lịch sử**, hiển thị một trong các kết quả: <br>• **Khớp hoàn toàn**: file trùng (theo checksum) với một file đã sinh. Hiện thị trường, phiên bản, có phải bản hiện hành không, yêu cầu gốc, người sinh, ngày sinh, kèm link sang các mục đó. <br>• **Nội dung khớp nhưng file khác**: 2 con số (và thị trường, nếu có trong file) trùng một phiên bản trong lịch sử nhưng file không trùng. Cảnh báo "file có thể được sinh ngoài hệ thống hoặc đã bị chỉnh sửa". <br>• **Không có trong lịch sử**: cảnh báo "file không do hệ thống này sinh ra" (ví dụ file cấp trước khi có hệ thống) |
+| F9.5 | Nếu file khớp một phiên bản **không còn là bản hiện hành** thì cảnh báo thêm: "Đây là file cũ (vX); license hiện hành của thị trường là vY" |
+| F9.6 | Hệ thống **không lưu file tải lên**. Chỉ ghi nhật ký: người thực hiện, thời điểm, tên file, checksum, kết quả (giải mã được hay không, khớp với license nào) |
+| F9.7 | Ai được dùng: **Admin và Người thực hiện** (xem thêm câu hỏi mở ở mục 13). Áp dụng giới hạn tần suất như các chức năng nhạy cảm khác (F7.8) |
+| F9.8 | Từ màn hình chi tiết một file trong lịch sử, có thể dùng cùng chức năng để **giải mã lại file đã lưu** nhằm kiểm tra file không bị hỏng |
 
 ---
 
@@ -251,6 +267,7 @@ Các nhánh phụ:
 | Chi tiết yêu cầu / nhập OTP | Thông tin yêu cầu, đếm ngược, ô nhập 6 số, gửi lại, hủy; sau khi thành công thì hiện kết quả và nút tải file | Tất cả xem; thao tác: người tạo, Admin |
 | Danh sách yêu cầu | Lọc theo trạng thái, thị trường | Tất cả |
 | Lịch sử file license | Lọc theo thị trường, tải file | Tất cả xem; tải: Admin, Người thực hiện |
+| Kiểm tra file license | Tải lên file → nội dung giải mã → kết quả đối chiếu lịch sử (khớp / khác / không có) | Admin, Người thực hiện |
 | Người dùng | Thêm, sửa, khóa, đặt lại mật khẩu | Admin |
 | Nhật ký hệ thống | Lọc theo hành động, người dùng | Admin |
 
@@ -260,7 +277,7 @@ Các nhánh phụ:
 
 - Hệ thống chỉ dùng **trong mạng nội bộ VHT** (hoặc qua VPN).
 - **Khóa hoặc thuật toán mã hóa license phải được bảo vệ**: không để trong mã nguồn hay ở chỗ người dùng xem được.
-- Phần mã hóa file license phải **tách riêng, thay thế được**. Hiện **chưa có thuật toán thật**, giai đoạn đầu dùng định dạng thử nghiệm.
+- Phần mã hóa và giải mã file license phải **tách riêng, thay thế được**, và làm đúng theo **Phụ lục A**. File sinh ra phải được **service Open API ở thị trường giải mã được**.
 - Giao diện tiếng Việt; số hiển thị có dấu phân cách hàng nghìn (500.000); thời gian theo giờ Việt Nam.
 - Dữ liệu lịch sử license và nhật ký phải được **sao lưu định kỳ**, vì đây là "sổ cái" của license.
 
@@ -292,14 +309,74 @@ Các nhánh phụ:
 
 ## 13. Vấn đề còn mở, cần làm rõ với người giao việc
 
-1. **Thuật toán mã hóa và định dạng file license**: chưa được cung cấp. Cần lấy từ tool sinh license hiện tại hoặc từ đội phụ trách service Open API ở thị trường.
+1. **Thuật toán mã hóa và định dạng file license**: điền vào **Phụ lục A**. Nếu phụ lục còn trống, lấy từ tool sinh license hiện tại hoặc từ đội phụ trách service Open API ở thị trường.
 2. **Tool sinh license cũ** có bị thu hồi hay khóa lại không? Nếu tool cũ vẫn dùng được thì có thể sinh license mà không qua OTP, và lịch sử vẫn bị thiếu.
 3. **Email Người duyệt chính thức** và có cần người duyệt dự phòng (khi Giám đốc vắng) không.
 4. Các giá trị giới hạn ở mục F7 (thời hạn OTP, số lần gửi lại…) đã phù hợp chưa.
 5. Có cho phép **giảm** con số license không, hay chỉ cảnh báo như hiện tại.
+6. Chức năng **Kiểm tra file license** (F9) có cho Người xem dùng không. Hiện đề xuất chỉ Admin và Người thực hiện.
 
 ---
 
 ## 14. Hiện trạng
 
-Đã có **bản làm thử (MVP)** trong repository này, nhánh `claude/compassionate-brahmagupta-aq2dd6`, bao phủ các nhóm F1–F8. Phần mã hóa đang ở dạng thử nghiệm. Người tiếp nhận có thể tham khảo, phát triển tiếp hoặc làm lại theo công nghệ của mình. Tài liệu này mới là căn cứ về yêu cầu.
+Đã có **bản làm thử (MVP)** trong repository này, nhánh `claude/compassionate-brahmagupta-aq2dd6`, bao phủ các nhóm F1–F8. **Nhóm F9 chưa làm.** Phần mã hóa đang ở dạng thử nghiệm, chưa theo Phụ lục A. Người tiếp nhận có thể tham khảo, phát triển tiếp hoặc làm lại theo công nghệ của mình. Tài liệu này mới là căn cứ về yêu cầu.
+
+---
+
+## Phụ lục A. Thuật toán mã hóa và giải mã file license
+
+> Phần này do **người giao việc điền**. Người tiếp nhận phải làm đúng theo phụ lục này cho cả **sinh file (F4)** và **giải mã file (F9)**.
+> **Không** ghi khóa bí mật thật vào tài liệu. Chỉ ghi khóa được lấy ở đâu và ai quản lý.
+
+### A.1. Mô tả ngắn
+
+<!-- Mô tả ngắn: dùng thuật toán gì, các bước mã hóa / giải mã, định dạng đầu ra (nhị phân, base64, ...). -->
+
+_(chưa điền)_
+
+### A.2. Nội dung bên trong file (trước khi mã hóa)
+
+| Thông tin | Tên trường / vị trí trong file | Bắt buộc | Ghi chú |
+|---|---|---|---|
+| Max Sub | | Có | |
+| Max Active Sub | | Có | |
+| Mã thị trường | | | Nếu định dạng hiện tại có |
+| Phiên bản / mã license / ngày cấp | | | Nếu định dạng hiện tại có |
+
+<!-- Nếu có ví dụ nội dung gốc trước khi mã hóa, dán vào đây. -->
+
+### A.3. Code mã hóa
+
+Ngôn ngữ: _(điền, ví dụ Java)_
+
+```
+// DÁN CODE MÃ HÓA VÀO ĐÂY
+```
+
+### A.4. Code giải mã
+
+Ngôn ngữ: _(điền)_
+
+```
+// DÁN CODE GIẢI MÃ VÀO ĐÂY
+```
+
+### A.5. Khóa và tham số
+
+| Tham số | Giá trị / nơi lấy | Ai quản lý |
+|---|---|---|
+| Khóa mã hóa | _(KHÔNG ghi giá trị thật, chỉ ghi nơi lấy)_ | |
+| Khóa giải mã (nếu khác khóa mã hóa) | | |
+| Tham số khác (IV, salt, thuật toán băm…) | | |
+
+### A.6. Dữ liệu mẫu để kiểm thử
+
+Gửi kèm ít nhất **một file license thật đã cấp** cùng **2 con số đúng** của file đó, để người làm kiểm tra:
+
+- Giải mã file mẫu ra đúng 2 con số.
+- File do hệ thống mới sinh ra được **service Open API ở thị trường đọc được** (thử trên môi trường test của thị trường).
+
+| File mẫu | Thị trường | Max Sub | Max Active Sub |
+|---|---|---|---|
+| | | | |
